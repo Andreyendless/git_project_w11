@@ -224,7 +224,87 @@ def main():
                 export_to_csv('data/contacts_export.csv', [{'name': contact.name, 'phone': contact.phone, 'email': contact.email} for contact in contacts], ['name', 'phone', 'email'])
                 print("Контакты успешно экспортированы в CSV-файл.")
             elif choice == "6":
-                print("До свидания!")
-                break
-            else:
-                print("Некорректный выбор. Пожалуйста, выберите действие из меню.")
+                filename = input("Введите имя CSV-файла для импорта: ")
+                imported_contacts = import_from_csv(filename)
+                contacts = Contact.load_contacts()
+                contacts.extend([Contact(contact['name'], contact['phone'], contact['email']) for contact in imported_contacts])
+                Contact.save_contacts(contacts)
+                print("Контакты успешно импортированы из CSV-файла.")
+            elif choice == "7":
+                continue
+        
+        elif choice == "4":
+            finance_menu()
+            choice = input("Выберите действие: ")
+            if choice == "1":
+                date = input("Введите дату (в формате ДД-ММ-ГГГГ): ")
+                if not validate_date(date):
+                    print("Некорректная дата. Пожалуйста, введите дату в формате ДД-ММ-ГГГГ.")
+                    continue
+                income = float(input("Введите доход: "))
+                expense = float(input("Введите расход: "))
+                finances = Finance.load_finances()
+                finances.append(Finance(date, income, expense))
+                Finance.save_finances(finances)
+                print("Финансовая запись успешно добавлена!")
+            elif choice == "2":
+                finances = Finance.load_finances()
+                for finance in finances:
+                    print(finance)
+            elif choice == "3":
+                start_date = input("Введите начальную дату (в формате ДД-ММ-ГГГГ): ")
+                if not validate_date(start_date):
+                    print("Некорректная дата. Пожалуйста, введите дату в формате ДД-ММ-ГГГГ.")
+                    continue
+                end_date = input("Введите конечную дату (в формате ДД-ММ-ГГГГ): ")
+                if not validate_date(end_date):
+                    print("Некорректная дата. Пожалуйста, введите дату в формате ДД-ММ-ГГГГ.")
+                    continue
+                start_date = datetime.strptime(start_date, '%d-%m-%Y')
+                end_date = datetime.strptime(end_date, '%d-%m-%Y')
+                finances = Finance.load_finances()
+                filtered_finances = [finance for finance in finances if start_date <= finance.date <= end_date]
+                total_income = sum(finance.income for finance in filtered_finances)
+                total_expense = sum(finance.expense for finance in filtered_finances)
+                balance = total_income - total_expense
+                print(f"Финансовый отчёт за период с {start_date.strftime('%d-%m-%Y')} по {end_date.strftime('%d-%m-%Y')}:")
+                print(f"Общий доход: {total_income} руб.")
+                print(f"Общие расходы: {total_expense} руб.")
+                print(f"Баланс: {balance} руб.")
+                export_to_csv(f'data/report_{start_date.strftime("%d-%m-%Y")}_{end_date.strftime("%d-%m-%Y")}.csv', [{'date': finance.date.strftime('%d-%m-%Y'), 'income': finance.income, 'expense': finance.expense} for finance in filtered_finances], ['date', 'income', 'expense'])
+                print(f"Подробная информация сохранена в файле report_{start_date.strftime('%d-%m-%Y')}_{end_date.strftime('%d-%m-%Y')}.csv")
+            elif choice == "4":
+                finances = Finance.load_finances()
+                for i, finance in enumerate(finances):
+                    print(f"{i+1}. {finance.date.strftime('%d-%m-%Y')}")
+                index = int(input("Введите номер финансовой записи для удаления: ")) - 1
+                del finances[index]
+                Finance.save_finances(finances)
+                print("Финансовая запись успешно удалена!")
+            elif choice == "5":
+                finances = Finance.load_finances()
+                export_to_csv('data/finance_export.csv', [{'date': finance.date.strftime('%d-%m-%Y'), 'income': finance.income, 'expense': finance.expense} for finance in finances], ['date', 'income', 'expense'])
+                print("Финансовые записи успешно экспортированы в CSV-файл.")
+            elif choice == "6":
+                filename = input("Введите имя CSV-файла для импорта: ")
+                imported_finances = import_from_csv(filename)
+                finances = Finance.load_finances()
+                finances.extend([Finance(finance['date'], finance['income'], finance['expense']) for finance in imported_finances])
+                Finance.save_finances(finances)
+                print("Финансовые записи успешно импортированы из CSV-файла.")
+            elif choice == "7":
+                continue
+        
+        elif choice == "5":
+            expression = input("Введите математическое выражение: ")
+            result = calculate(expression)
+            if result is not None:
+                print(f"Результат: {result}")
+        
+        elif choice == "6":
+            print("До свидания!")
+            break
+        else:
+            print("Некорректный выбор. Пожалуйста, выберите действие из меню.")
+
+main()
