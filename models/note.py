@@ -17,3 +17,4 @@ class Note:
 
     def __str__(self):
         return f"Заметка: {self.title}\nСодержание: {self.content}"
+    
